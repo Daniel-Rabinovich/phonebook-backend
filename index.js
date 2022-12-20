@@ -1,7 +1,9 @@
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 
 app.use(express.json())
+app.use(morgan('tiny'))
 
 let persons = [
     {
@@ -58,7 +60,7 @@ app.post('/api/persons', (request, response) => {
         .json({ error: 'name must be unique' })
     } else {
         const newP = {
-            id: Math.Floor(Math.random()*10000000),
+            id: Math.floor(Math.random()*10000000),
             name: person.name,
             number: person.number
         }
