@@ -23,11 +23,6 @@ let persons = [
       "id": 4,
       "name": "Mary Poppendieck",
       "number": "39-23-6423122"
-    },
-    {
-        "id": 5,
-        "name": "test user",
-        "number": "12345"
     }
 ]
 
@@ -39,13 +34,37 @@ app.get('/info', (request, response) => {
     const amount = persons.reduce((t, p) => t += 1,0)
     const date = new Date()
     response.send(
-        `Phonebook has info for ${amount} people,
-        ${date}`
+        `Phonebook has info for ${amount} people,<br> ${date}`
     )
 })
 
 app.get('/api/persons', (request, response) => {
     response.json(persons)
+})
+
+app.post('/api/persons', (request, response) => {
+
+    const person = request.body
+
+    const duplicate = persons.find(
+        p => p.name.toLowerCase() === person.name.toLowerCase()
+    )
+
+    if (!person.name || !person.number){
+        response.status(400)
+        .json({ error: 'missing content' })
+    } else if (duplicate) {
+        response.status(400)
+        .json({ error: 'name must be unique' })
+    } else {
+        const newP = {
+            id: Math.Floor(Math.random()*10000000),
+            name: person.name,
+            number: person.number
+        }
+        persons = persons.concat(newP)
+        response.json(newP)
+    }
 })
 
 app.get('/api/persons/:id', (request, response) => {
