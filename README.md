@@ -9,5 +9,12 @@ link: https://zany-gray-salmon-cap.cyclic.app
 ## POST
 * Add new person : POST `/api/persons`
 
+```json
+{
+    "name": "persons name",
+    "number": "123123123"
+}
+```
+
 ## DELETE
 * Delete person by id : DELETE `/api/person/id`
