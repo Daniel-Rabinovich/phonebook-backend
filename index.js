@@ -27,16 +27,25 @@ const persons = [
 ]
 
 app.get('/', (request, response) => {
-  response.send("<h1>Hello World</h1>")
+    response.send("<h1>Hello World</h1>")
+})
+
+app.get('/info', (request, response) => {
+    const amount = persons.reduce((t, p) => t += 1,0)
+    const date = new Date()
+    response.send(
+        `Phonebook has info for ${amount} people,
+        ${date}`
+    )
 })
 
 app.get('/api/persons', (request, response) => {
-  response.json(persons)
+    response.json(persons)
 })
 
 const PORT = 3001
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+    console.log(`Server running on port ${PORT}`)
 })
 
 
