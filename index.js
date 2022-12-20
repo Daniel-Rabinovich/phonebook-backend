@@ -46,9 +46,6 @@ let persons = [
     }
 ]
 
-app.get('/', (request, response) => {
-    response.send("<h1>NodeJS REST API</h1>")
-})
 
 app.get('/info', (request, response) => {
     const amount = persons.reduce((t, p) => t += 1,0)
