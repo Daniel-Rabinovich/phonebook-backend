@@ -1,12 +1,19 @@
+//
+// imports
+//
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const Person = require('./models/person.js')
 
+//
+// middleware
+//
 const app = express()
 app.use(express.json())
 app.use(cors())
 app.use(express.static('build'))
-
 app.use(morgan(function (tokens, req, res) {
   return [
     tokens.method(req, res),
@@ -18,78 +25,64 @@ app.use(morgan(function (tokens, req, res) {
   ].join(' ')
 }))
 
-
-let persons = [
-    {
-      "id": 1,
-      "name": "Arto Hellas",
-      "number": "040-123456"
-    },
-    {
-      "id": 2,
-      "name": "Ada Lovelace",
-      "number": "39-44-5323523"
-    },
-    {
-      "id": 3,
-      "name": "Dan Abramov",
-      "number": "12-43-234345"
-    },
-    {
-      "id": 4,
-      "name": "Mary Poppendieck",
-      "number": "39-23-6423122"
-    }
-]
-
-
+//
+// Api routes
+//
 app.get('/info', (request, response) => {
-    const amount = persons.reduce((t, p) => t += 1,0)
-    const date = new Date()
-    response.send(
-        `Phonebook has info for ${amount} people,<br> ${date}`
-    )
+    Person.find({})
+    .then(persons => {
+      let amount = persons.reduce((t,p) => t +=1, 0)
+      const date = new Date()
+      response.send(
+          `Phonebook has info for ${amount} people,<br> ${date}`
+      )
+    })
 })
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Person.find({})
+    .then(persons => {
+      response.json(persons)
+    })
 })
 
 app.post('/api/persons', (request, response) => {
 
-    const person = request.body
-
-    const duplicate = persons.find(
-        p => p.name.toLowerCase() === person.name.toLowerCase()
-    )
-
-    if (!person.name || !person.number){
-        response.status(400)
-        .json({ error: 'missing content' })
-    } else if (duplicate) {
-        response.status(400)
-        .json({ error: 'name must be unique' })
-    } else {
-        const newP = {
-            id: Math.floor(Math.random()*10000000),
-            name: person.name,
-            number: person.number,
-            show: true
-        }
-        persons = persons.concat(newP)
-        response.json(newP)
+    if(request.body.name === undefined || request.body.number === undefined) {
+      return response.status(400).json({ error: "name or number missing!"})
     }
+
+    const query = {
+      "name": {
+        $regex : `^${request.body.name}$`,
+        $options: "i"
+      }
+    }
+
+    Person.findOne(query)
+    .then(person => {
+      if(person != null) {
+        return response.status(400).json({ error: "name already exists!"})
+      } else {
+        const newP = new Person({
+          name: request.body.name,
+          number: request.body.number
+        })
+        newP.save().then(savedPerson => {
+          return response.json(savedPerson)
+        })
+      }
+    })
+    .catch(err => {
+      return response.status(400).json({ error: err})
+    })
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const p = persons.find(p => p.id === id)
-
-    if (p) {
-        response.json(p)
-    } else {
-        response.status(404).end()
-    }
+    Person.findById(request.params.id)
+    .then(person => {
+      return response.json(person)
+    })
 })
 
 app.delete('/api/persons/:id', (request, response) => {
@@ -98,7 +91,7 @@ app.delete('/api/persons/:id', (request, response) => {
   response.status(204).end()
 })
 
-const PORT = 3001
+const PORT = process.env.PORT
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })

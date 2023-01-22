@@ -1,9 +1,10 @@
 const mongoose = require('mongoose')
 
 const len = process.argv.length
-const [,,password,name,number] = process.argv
+const [password,name,number] = process.argv.slice(2,5)
 const url = `mongodb+srv://danny:${password}@phonebook.zp3rlwc.mongodb.net/?retryWrites=true&w=majority`
 
+mongoose.set('strictQuery',false)
 const personSchema = new mongoose.Schema({
   name: String,
   number: String
